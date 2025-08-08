@@ -1,5 +1,5 @@
 from django.db import models
-#from products.models import Product
+from products.models import Product
 
 # Create your models here.
 
@@ -14,7 +14,7 @@ class InventoryMovement(models.Model):
         ('venta', 'Venta'),
         ('ajuste', 'Ajuste'),
     ]
-    '''
+
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name= 'movements')
     quantity = models.PositiveIntegerField()
     movement_type = models.CharField(max_length=10, choices=MOVEMENT_TYPES)
@@ -23,4 +23,3 @@ class InventoryMovement(models.Model):
 
     def __str__(self):
         return f"{self.product.name} - {self.movement_type} ({self.quantity})"
-    '''
