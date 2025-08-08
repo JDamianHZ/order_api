@@ -1,10 +1,29 @@
 from django.shortcuts import render
-from rest_framework import viewsets
+from rest_framework import viewsets, permissions
 from rest_framework.response import Response
-from .models import Supplier #Product
-from .serializers import SupplierSerializer
+from .models import Supplier, Product, Category
+from .serializers import SupplierSerializer, CategorySerializer, ProductSerializer
 
-# Create your views here.
+#CRUD de categorias
+class CategoryViewSet(viewsets.ModelViewSet):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+    permission_classes = [permissions.AllowAny]
+
+
+#CRUD de productos
+class ProductViewSet(viewsets.ModelViewSet):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+    permission_classes = [permissions.AllowAny]
+
+#Filtro por categoria
+def get_queryset(self):
+    queryset = Product.objects.all()
+    category_id = self.request.query_params.get('category')
+    if category_id:
+        queryset = queryset.filter(category_id=category_id)
+    return queryset
 
 class SupplierViewSet(viewsets.ModelViewSet):
     queryset = Supplier.objects.all()
