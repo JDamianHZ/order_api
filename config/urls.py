@@ -24,6 +24,7 @@ urlpatterns = [
     path('', RedirectView.as_view(url='/api/docs/', permanent = False)),
     path('api/', include('products.urls')),
     path('api/users/', include('users.urls')),
+    path('api/', include('orders.urls')),
 
 
     # Swagger URLS
