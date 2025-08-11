@@ -2,8 +2,11 @@ from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema, extend_schema_field
 from rest_framework import serializers
 from django.db import transaction
+
+from inventory.models import InventoryMovement
 from products.models import Product
 from .models import Order, OrderItem
+from django.db.models import F
 
 class OrderItemReadSerializer(serializers.ModelSerializer):
     product_name = serializers.CharField(source='product.name', read_only=True)
@@ -49,6 +52,7 @@ class OrderSerializer(serializers.ModelSerializer):
         product_ids = [it["product"].id for it in items_data]
         products = {p.id: p for p in Product.objects.select_related().filter(id__in=product_ids)}
 
+        count_stock = []
         for item in items_data:
             product = products[item["product"].id]
             qty = item["quantity"]
@@ -57,10 +61,20 @@ class OrderSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(
                     {"items_data": [f"Insufficient stock for product '{product.name}' (available {product.stock})."]}
                 )
-
+        for item in items_data:
+            product = products[item["product"].id]
+            qty = item["quantity"]
             price_now = product.price
             OrderItem.objects.create(order=order, product=product, quantity=qty, price=price_now)
-            product.stock -= qty
+            Product.objects.filter(pk=product.id).update(stock=F("stock") - qty)
+
+            InventoryMovement.objects.create(
+                product=product,
+                quantity=qty,
+                movement_type = "salida",
+                reason = "venta"
+            )
+
             total += qty * price_now
 
         order.total = total

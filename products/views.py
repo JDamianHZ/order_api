@@ -1,12 +1,13 @@
-from django.shortcuts import render
+from django.db.models import Prefetch
 from rest_framework import viewsets, permissions
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, AllowAny
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from .models import Supplier, Product, Category
-from .serializers import SupplierSerializer, CategorySerializer, ProductSerializer
+from .serializers import SupplierSerializer, CategorySerializer, ProductSerializer, ProductInventoryHistorySerializer
 from drf_spectacular.utils import extend_schema, OpenApiResponse
 from .permissions import IsAdminUserCustom
+from inventory.models import InventoryMovement
 
 #CRUD de categorias
 class CategoryViewSet(viewsets.ModelViewSet):
@@ -74,11 +75,41 @@ class ProductViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(category_id=category_id)
         return queryset
 
+    @extend_schema(
+        summary="Ver historial de inventario de un producto",
+        responses={200: OpenApiResponse(response=ProductInventoryHistorySerializer)}
+    )
+    @action(
+        detail=True,
+        methods=["get"],
+        url_path="inventory",
+        permission_classes=[permissions.AllowAny],  # GET público
+    )
+    def inventory(self, request, pk=None):
+        product = (
+            Product.objects
+            .filter(pk=pk)
+            .prefetch_related(
+                Prefetch(
+                    "movements",
+                    queryset=InventoryMovement.objects.order_by("-timestamp")
+                )
+            )
+            .first()
+        )
+        if product is None:
+            return Response({"detail": "Not found."}, status=404)
+
+        data = ProductInventoryHistorySerializer(product).data
+        return Response(data)
+
+
+
 class SupplierViewSet(viewsets.ModelViewSet):
     queryset = Supplier.objects.all()
     serializer_class = SupplierSerializer
 
-    @action(detail=True, methods=['get'], url_path='low-stock')
+    @action(detail=False, methods=['get'], url_path='low-stock')
     @extend_schema(summary="Suppliers with products below 10 Units")
     def low_stock(self, request):
 
