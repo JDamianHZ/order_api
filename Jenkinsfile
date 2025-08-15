@@ -34,11 +34,10 @@ pipeline {
     }
     post {
         failure {
-            steps {
-                sh """
-                curl -X POST -H 'Content-type: application/json' --data '{"text": "El pipeline de *order_api* ha fallado. Revisa Jenkins."}' $SLACK_WEBHOOK_URL
-                """
-            }
+            // NO poner 'steps' aquí, solo los comandos directamente:
+            sh """
+            curl -X POST -H 'Content-type: application/json' --data '{"text": "El pipeline de *order_api* ha fallado. Revisa Jenkins."}' $SLACK_WEBHOOK_URL
+            """
         }
     }
 }
