@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = "nombre-usuario/order_api:latest"
+        DOCKER_IMAGE = "jdamianhz/order_api:latest"
         SLACK_WEBHOOK_URL = credentials('slack-webhook-url')
     }
 
@@ -19,8 +19,9 @@ pipeline {
         }
         stage('Push Docker Image') {
             steps {
-                // Si tienes Docker Hub u otro registry configurado, descomenta la siguiente línea y configura credenciales
+                // Si tienes Docker Hub configurado, descomenta la línea siguiente:
                 // sh "docker push ${DOCKER_IMAGE}"
+                echo "Push Docker Image stage (configura Docker Hub si quieres usarlo)"
             }
         }
         stage('Notify Slack') {
