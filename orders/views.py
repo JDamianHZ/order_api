@@ -55,7 +55,7 @@ class OrderViewSet(viewsets.ModelViewSet):
             return Response({"detail": "Canceled orders cannot be completed."}, status=status.HTTP_400_BAD_REQUEST)
 
         with transaction.atomic():
-            # ¿Ya se descontó antes? (busca movimientos de venta de esos productos desde que se creó la orden)
+
             already_applied = True
             for item in order.items.select_related("product").all():
                 exists_mv = InventoryMovement.objects.filter(
@@ -69,7 +69,7 @@ class OrderViewSet(viewsets.ModelViewSet):
                     break
 
             if not already_applied:
-                # Validar stock actual
+
                 insuficientes = []
                 for item in order.items.select_related("product").all():
                     if item.product.stock < item.quantity:
@@ -85,7 +85,6 @@ class OrderViewSet(viewsets.ModelViewSet):
                         status=status.HTTP_400_BAD_REQUEST
                     )
 
-                # Descontar stock + movimientos
                 for item in order.items.select_related("product").all():
                     Product.objects.filter(pk=item.product_id).update(stock=F("stock") - item.quantity)
                     InventoryMovement.objects.create(
