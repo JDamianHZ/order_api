@@ -13,6 +13,7 @@ class Order(models.Model):
         (CANCELED, "Cancelada"),
     )
 
+    id = models.AutoField(primary_key=True)
     customer_name = models.CharField(max_length=100)
     total = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=PENDING)
@@ -22,6 +23,8 @@ class Order(models.Model):
         return f"Order # {self.id} - {self.customer_name}"
 
 class OrderItem(models.Model):
+
+    id = models.AutoField(primary_key=True)
     order = models.ForeignKey(Order, related_name="items", on_delete=models.CASCADE)
     product = models.ForeignKey(Product, related_name="items", on_delete=models.PROTECT)
     quantity = models.PositiveIntegerField()
