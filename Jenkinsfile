@@ -1,32 +1,44 @@
+def remote = [:]
+remote.name = "mi_servidor"
+remote.host = "IP_DEL_SERVIDOR"
+
 pipeline {
-    agent any  // Correrá en el nodo que Jenkins tenga disponible
+    agent any
 
     environment {
+        CRED = credentials('sandbox')  // credencial de SSH
         APP_ENV = 'production'
     }
 
     stages {
-        stage('Checkout') {
+        stage('SET CRED') {
             steps {
-                checkout scm
+                script {
+                    remote.user = 'root'
+                    remote.password = "${CRED_PSW}"
+                    remote.allowAnyHosts = true
+                    echo "🔑 Credenciales configuradas para ${remote.user}@${remote.host}"
+                }
             }
         }
 
-        stage('Instalar dependencias') {
+        stage('Checkout') {
             steps {
-                echo '📦 Instalando dependencias...'
-                sh 'python3 -m pip install --upgrade pip'
-                sh 'python3 -m pip install -r requirements.txt'
-                    }
+                echo "📂 Checkout simulado: git stash, checkout master y pull en /root/mi_proyecto"
+            }
         }
 
-        stage('Pruebas') {
+        stage('Instalar dependencias y ejecutar tests') {
             steps {
-                echo '🧪 Ejecutando pruebas en contenedor Docker...'
-                sh '''
-                    docker run --rm -v $PWD:/app -w /app python:3.11 \
-                    /bin/bash -c "pytest tests/"
-                '''
+                sshCommand remote: remote,
+                    command: """
+                        cd /root/mi_proyecto &&
+                        echo '📦 Instalando dependencias...' &&
+                        python3 -m pip install --upgrade pip &&
+                        python3 -m pip install -r requirements.txt &&
+                        echo '🧪 Ejecutando pruebas...' &&
+                        pytest tests/
+                    """
             }
         }
 
@@ -35,8 +47,7 @@ pipeline {
                 branch 'master'
             }
             steps {
-                echo '🚀 Haciendo deploy a producción...'
-                // sh './scripts/deploy.sh'  <- aquí tu despliegue real
+                echo "🚀 Deploy simulado: ./scripts/deploy.sh"
             }
         }
     }
