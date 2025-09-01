@@ -2,8 +2,7 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = "jdamianhz/order_api:latest"
-        SLACK_WEBHOOK_URL = credentials('slack-webhook-url')
+        APP_ENV = 'production'
     }
 
     stages {
@@ -12,32 +11,39 @@ pipeline {
                 checkout scm
             }
         }
-        stage('Build Docker Image') {
+
+        stage('Instalar dependencias') {
             steps {
-                sh "docker build -t ${DOCKER_IMAGE} ."
+                echo '📦 Instalando dependencias...'
+                sh 'pip install -r requirements.txt'  // Ejemplo Python
             }
         }
-        stage('Push Docker Image') {
+
+        stage('Pruebas') {
             steps {
-                // Si tienes Docker Hub configurado, descomenta la línea siguiente:
-                // sh "docker push ${DOCKER_IMAGE}"
-                echo "Push Docker Image stage (configura Docker Hub si quieres usarlo)"
+                echo '🧪 Ejecutando pruebas...'
+                sh 'pytest tests/'  // Ajusta a tu framework
             }
         }
-        stage('Notify Slack') {
+
+        stage('Deploy a producción') {
+            when {
+                branch 'master'
+            }
             steps {
-                sh """
-                curl -X POST -H 'Content-type: application/json' --data '{"text": "La imagen Docker para *order_api* ha sido actualizada correctamente."}' $SLACK_WEBHOOK_URL
-                """
+                echo '🚀 Haciendo deploy a producción...'
+                // sh './scripts/deploy.sh'  <- aquí tu despliegue real
             }
         }
     }
+
     post {
+        success {
+            echo '✅ Build exitoso'
+        }
         failure {
-            // NO poner 'steps' aquí, solo los comandos directamente:
-            sh """
-            curl -X POST -H 'Content-type: application/json' --data '{"text": "El pipeline de *order_api* ha fallado. Revisa Jenkins."}' $SLACK_WEBHOOK_URL
-            """
+            echo '❌ Falló el pipeline'
+            error("El build falló, no se permitirá merge a master")
         }
     }
 }
