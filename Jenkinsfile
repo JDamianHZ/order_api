@@ -1,8 +1,5 @@
 pipeline {
-    agent {
-        // Usamos un contenedor que ya tiene Python 3 y pip
-        docker { image 'python:3.11' }
-    }
+    agent any  // Correrá en el nodo que Jenkins tenga disponible
 
     environment {
         APP_ENV = 'production'
@@ -17,16 +14,21 @@ pipeline {
 
         stage('Instalar dependencias') {
             steps {
-                echo '📦 Instalando dependencias...'
-                sh 'pip install --upgrade pip'      // Asegura pip actualizado
-                sh 'pip install -r requirements.txt'
+                echo '📦 Instalando dependencias en contenedor Docker...'
+                sh '''
+                    docker run --rm -v $PWD:/app -w /app python:3.11 \
+                    /bin/bash -c "pip install --upgrade pip && pip install -r requirements.txt"
+                '''
             }
         }
 
         stage('Pruebas') {
             steps {
-                echo '🧪 Ejecutando pruebas...'
-                sh 'pytest tests/'  // Ajusta a tu framework
+                echo '🧪 Ejecutando pruebas en contenedor Docker...'
+                sh '''
+                    docker run --rm -v $PWD:/app -w /app python:3.11 \
+                    /bin/bash -c "pytest tests/"
+                '''
             }
         }
 
