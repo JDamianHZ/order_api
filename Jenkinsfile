@@ -14,12 +14,10 @@ pipeline {
 
         stage('Instalar dependencias') {
             steps {
-                echo '📦 Instalando dependencias en contenedor Docker...'
-                sh '''
-                    docker run --rm -v $PWD:/app -w /app python:3.11 \
-                    /bin/bash -c "pip install --upgrade pip && pip install -r requirements.txt"
-                '''
-            }
+                echo '📦 Instalando dependencias...'
+                sh 'python3 -m pip install --upgrade pip'
+                sh 'python3 -m pip install -r requirements.txt'
+                    }
         }
 
         stage('Pruebas') {
