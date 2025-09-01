@@ -1,6 +1,6 @@
 def remote = [:]
-remote.name = "mi_servidor"
-remote.host = "IP_DEL_SERVIDOR"
+remote.name = "${params.host_name}"
+remote.host = "${params.host_ip}"
 
 pipeline {
     agent any
