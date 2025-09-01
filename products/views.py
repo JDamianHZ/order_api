@@ -15,7 +15,6 @@ class CategoryViewSet(viewsets.ModelViewSet):
     serializer_class = CategorySerializer
     permission_classes = [permissions.AllowAny]
 
-
 #CRUD de productos
 class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.all()
