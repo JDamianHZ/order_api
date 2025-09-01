@@ -1,6 +1,4 @@
 def remote = [:]
-remote.name = "${params.host_name}"
-remote.host = "${params.host_ip}"
 
 pipeline {
     agent any
@@ -14,6 +12,8 @@ pipeline {
         stage('SET CRED') {
             steps {
                 script {
+                    remote.name = "${params.host_name}"
+                    remote.host = "${params.host_ip}"
                     remote.user = 'root'
                     remote.password = "${CRED_PSW}"
                     remote.allowAnyHosts = true
@@ -24,7 +24,13 @@ pipeline {
 
         stage('Checkout') {
             steps {
-                echo "📂 Checkout simulado: git stash, checkout master y pull en /root/mi_proyecto"
+                sshCommand remote: remote,
+                    command: """
+                        cd /root/mi_proyecto &&
+                        git stash &&
+                        git checkout master &&
+                        git pull
+                    """
             }
         }
 
@@ -47,7 +53,8 @@ pipeline {
                 branch 'master'
             }
             steps {
-                echo "🚀 Deploy simulado: ./scripts/deploy.sh"
+                sshCommand remote: remote,
+                    command: "./scripts/deploy.sh"
             }
         }
     }
