@@ -79,14 +79,16 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+import os
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'order_api',
-        'USER': 'gaelf',
-        'PASSWORD': 'GAEL12',
-        'HOST': 'localhost',
-        'PORT': '3306',
+        'NAME': os.environ.get('DB_NAME', 'order_api'),
+        'USER': os.environ.get('DB_USER', 'gaelf'),
+        'PASSWORD': os.environ.get('DB_PASSWORD', 'GAEL12'),
+        'HOST': os.environ.get('DB_HOST', 'order-mysql'),
+        'PORT': os.environ.get('DB_PORT', '3306'),
         'OPTIONS': {
             'charset': 'utf8mb4',
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
