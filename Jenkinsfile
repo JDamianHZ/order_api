@@ -1,5 +1,8 @@
 pipeline {
-    agent any
+    agent {
+        // Usamos un contenedor que ya tiene Python 3 y pip
+        docker { image 'python:3.11' }
+    }
 
     environment {
         APP_ENV = 'production'
@@ -15,7 +18,8 @@ pipeline {
         stage('Instalar dependencias') {
             steps {
                 echo '📦 Instalando dependencias...'
-                sh 'pip install -r requirements.txt'  // Ejemplo Python
+                sh 'pip install --upgrade pip'      // Asegura pip actualizado
+                sh 'pip install -r requirements.txt'
             }
         }
 
