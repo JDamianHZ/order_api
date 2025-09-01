@@ -1,19 +1,18 @@
 def remote = [:]
+remote.name = "${params.host_name}"
+remote.host = "${params.host_ip}"
 
 pipeline {
     agent any
 
     environment {
         CRED = credentials('sandbox')  // credencial de SSH
-        APP_ENV = 'production'
     }
 
     stages {
         stage('SET CRED') {
             steps {
                 script {
-                    remote.name = "${params.host_name}"
-                    remote.host = "${params.host_ip}"
                     remote.user = 'root'
                     remote.password = "${CRED_PSW}"
                     remote.allowAnyHosts = true
@@ -24,27 +23,31 @@ pipeline {
 
         stage('Checkout') {
             steps {
-                sshCommand remote: remote,
-                    command: """
-                        cd /root/mi_proyecto &&
-                        git stash &&
-                        git checkout master &&
-                        git pull
-                    """
+                script {
+                    sshCommand remote: remote,
+                        command: """
+                            cd /root/mi_proyecto &&
+                            git stash &&
+                            git checkout master &&
+                            git pull
+                        """
+                }
             }
         }
 
         stage('Instalar dependencias y ejecutar tests') {
             steps {
-                sshCommand remote: remote,
-                    command: """
-                        cd /root/mi_proyecto &&
-                        echo '📦 Instalando dependencias...' &&
-                        python3 -m pip install --upgrade pip &&
-                        python3 -m pip install -r requirements.txt &&
-                        echo '🧪 Ejecutando pruebas...' &&
-                        pytest tests/
-                    """
+                script {
+                    sshCommand remote: remote,
+                        command: """
+                            cd /root/mi_proyecto &&
+                            echo '📦 Instalando dependencias...' &&
+                            python3 -m pip install --upgrade pip &&
+                            python3 -m pip install -r requirements.txt &&
+                            echo '🧪 Ejecutando pruebas...' &&
+                            pytest tests/
+                        """
+                }
             }
         }
 
@@ -53,8 +56,10 @@ pipeline {
                 branch 'master'
             }
             steps {
-                sshCommand remote: remote,
-                    command: "./scripts/deploy.sh"
+                script {
+                    sshCommand remote: remote,
+                        command: "./scripts/deploy.sh"
+                }
             }
         }
     }
