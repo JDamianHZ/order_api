@@ -48,12 +48,12 @@ pipeline {
                     sshCommand remote: remote,
                         command: """
                             cd /tmp/mi_proyecto &&
-                            echo '📦 Instalando dependencias en entorno virtual...' &&
+                            echo 'Instalando dependencias en entorno virtual...' &&
                             python3 -m venv venv &&
                             source venv/bin/activate &&
                             python3 -m pip install --upgrade pip &&
                             python3 -m pip install -r requirements.txt &&
-                            echo '🧪 Ejecutando pruebas...' &&
+                            echo 'Ejecutando pruebas...' &&
                             pytest tests/ || echo "No hay pruebas, continuee"
                         """
                 }
@@ -72,10 +72,10 @@ pipeline {
     }
     post {
         success {
-            echo '✅ Build exitoso'
+            echo 'Build exitoso'
         }
         failure {
-            echo '❌ Falló el pipeline'
+            echo 'Falló el pipeline'
             error("El build falló, no se permitirá merge a master")
         }
     }
